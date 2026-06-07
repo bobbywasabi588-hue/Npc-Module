@@ -1,7 +1,7 @@
 -- Disord user: Bobby36746 Roblox User: Bobbywasabi5888
 -- This is an NPC AI combat controller
 local module = {} 
-local states = require(game.ServerScriptService:WaitForChild("States"))
+local states = require(game.ServerScriptService:WaitForChild("States")) -- This module script handles states like stuns, blocking, and cooldowns.
 module.__index = module
 local blocking = require(game.ServerScriptService.Blocking)
 function module.new(npc, style)
@@ -141,7 +141,7 @@ function module:Block()
 	if states.GetState(self.Char, "Attacking") then return end
 	local anim = self.Animator:LoadAnimation(game.ReplicatedStorage.Anims.Block)
 	anim:Play()
-	blocking.Block(self.Char) -- use the blocking function in the blocking module.
+	blocking.Block(self.Char) -- uses the blocking function in the blocking module, which uses the state module to set a blocking state.
 	local random = math.random(30,200)/100 -- block for a random amount of time
 	task.delay(random, function()
 		anim:Stop() -- stop blocking
