@@ -9,9 +9,9 @@ function module.new(npc, style)
 	self.Char = npc
 	self.Hum = npc:WaitForChild("Humanoid")
 	self.Style = style
-	local module = require(game.ReplicatedStorage:WaitForChild(style)) -- fighting style module script with moves
-	if not module then print("no module") return end
-	self.StyleModule = module
+	local stylemodule = require(game.ReplicatedStorage:WaitForChild(style)) -- fighting style module script with moves
+	if not stylemodule then print("no module") return end
+	self.StyleModule = stylemodule
 	self.Animator = self.Hum.Animator
 	self.Combo = 0
 	self.LastM1 = 0
