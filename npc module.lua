@@ -1,4 +1,5 @@
 -- Disord user: Bobby36746 Roblox User: Bobbywasabi5888
+-- This is an NPC AI combat controller
 local module = {} 
 local states = require(game.ServerScriptService:WaitForChild("States"))
 module.__index = module
@@ -27,9 +28,7 @@ function module.new(npc, style)
 	self.Target = nil
 	local conn2
 	conn2 = self.Hum.Died:Connect(function() -- remove the current attacker attribute to the target if the npc dies
-		if self.Target and self.Target.Character then
-			self.Target.Character:SetAttribute("CurrentAttacker", nil)
-		end
+		self:Cleanup()
 		conn2:Disconnect()
 	end)
 	self:Start()
@@ -44,7 +43,7 @@ function module:GetClosestPlayer()
 		if char and char:FindFirstChild("HumanoidRootPart") then
 			local hum = char.Humanoid
 			if not hum or hum.Health <= 0 then continue end
-			local distance = (char.HumanoidRootPart.Position - self.Char.HumanoidRootPart.Position).Magnitude
+			local distance = (char.HumanoidRootPart.Position - self.Root.Position).Magnitude
 			
 			if distance < range then
 				range = distance
@@ -180,7 +179,7 @@ function module:Start()
 	local attacking = false
 	task.spawn(function()
 	while task.wait(0.1) do -- core npc loop
-		if not self.Char or self.Hum.Health <= 0 then break end
+		if not self.Char or self.Hum.Health <= 0 then self:Cleanup() break end
 		if not self.Target or not self.Target.Character then continue end -- if theres no enemy target then end 
 		local dist = self:Dist(self.Char, self.Target.Character)
 		self:FaceCharacter(self.Target.Character)
@@ -190,6 +189,7 @@ function module:Start()
 				task.spawn(function()
 					if self.Target and self.Target.Character then
 						if self.Target.Character:GetAttribute("CurrentAttacker") and self.Target.Character:GetAttribute("CurrentAttacker") ~= self.Char.Name then -- again, if currnet attacker isnt the npc then end
+							attacking = false
 							return
 						end
 					end
@@ -201,16 +201,28 @@ function module:Start()
 			self:FollowPlayer(self.Target) -- if they are more then 6 studs away follow them
 		end
 		if dist > 20 and self.Target and self.Target.Character then -- reset if the enemy is too far
-			self.Target.Character:SetAttribute("CurrentAttacker", nil)
-			self.Target = nil
+			self:Cleanup()
 		end
 	end
 	end)
 	task.spawn(function() -- find closest player loop
-		while wait(0.5) do
+		while task.wait(0.5) do
 			self:GetClosestPlayer()
 		end
 	end)
 end
+
+function module:Cleanup()
+    if not self.Target then
+        return
+    end
+
+    if self.Target.Character then
+        self.Target.Character:SetAttribute("CurrentAttacker", nil)
+    end
+
+    self.Target = nil
+end
+		
 
 return module
