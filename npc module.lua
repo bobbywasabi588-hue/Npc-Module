@@ -2,7 +2,6 @@
 local module = {} 
 local states = require(game.ServerScriptService:WaitForChild("States"))
 module.__index = module
-local pathfinding = game:GetService("PathfindingService")
 local blocking = require(game.ServerScriptService.Blocking)
 function module.new(npc, style)
 	local self = setmetatable({}, module)
