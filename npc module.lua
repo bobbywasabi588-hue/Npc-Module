@@ -66,7 +66,7 @@ end
 function module:FollowPlayer(player)
 	local char = player.Character
 	if not char then return end
-	if states.GetState(self.Char, "Stunned") then return end -- if npc is stunned then end
+	if states.GetState(self.Char, "Stunned") then return end -- get state returns the state of the character provided, if npc is stunned then end
 	if states.GetState(self.Char, "Blocking") then return end -- if npc is blocking then end
 	local targetRoot = char:FindFirstChild("HumanoidRootPart")
 	if not targetRoot then return end
@@ -90,7 +90,7 @@ function module:FaceCharacter(character)
 	if not character then return end
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if not root then return end
-	self.Align.CFrame = CFrame.lookAt(self.Root.Position, root.Position) -- Align position so the npc faces the player smoothly
+	self.Align.CFrame = CFrame.lookAt(self.Root.Position, root.Position) -- Aligns position so the npc faces the player smoothly
 end
 
 function module:Dist(char1, char2)
