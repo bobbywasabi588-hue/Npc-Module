@@ -37,7 +37,7 @@ function module.new(npc, style)
 	local conn
 	conn = self.Hum.Died:Connect(function() -- does the end function when the npc dies
 		self:End()
-		conn2:Disconnect() -- disconnects the connect function
+		conn:Disconnect() -- disconnects the connect function
 	end)
 	self:Start() -- starts the npc loop
 	return self
