@@ -2,7 +2,7 @@
 -- This is an NPC AI combat controller
 -- I know its close, but this script is indeed over 200 lines, not including blanks lines.
 local module = {} 
-local states = require(game.ServerScriptService:WaitForChild("States")) -- This module script handles states like stuns, blocking, and cooldowns.
+local states = require(game.ServerScriptService:WaitForChild("States")) -- This module script handles states like stuns, blocking, and cooldowns. For combat.
 module.__index = module
 local blocking = require(game.ServerScriptService.Blocking)
 
@@ -74,7 +74,7 @@ function module:FollowPlayer(player)
 	local myPos = self.Root.Position -- position of the npc
 	local dist = (targetpos - myPos).Magnitude
 	if char:GetAttribute("CurrentAttacker") and char:GetAttribute("CurrentAttacker")  ~= self.Char.Name then -- This detects if the target is already being attacked by another npc, if so it will stay still.
-		self.Hum:MoveTo(myPos) -- stay still
+		self.Hum:MoveTo(myPos) -- makes the npc stay still
 		return
 	end
 	if not char:GetAttribute("CurrentAttacker") then
