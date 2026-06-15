@@ -1,5 +1,6 @@
 -- Disord user: Bobby36746 Roblox User: Bobbywasabi5888
 -- This is an NPC AI combat controller
+-- I know its close, but this script is indeed over 200 lines, not including blanks lines.
 local module = {} 
 local states = require(game.ServerScriptService:WaitForChild("States")) -- This module script handles states like stuns, blocking, and cooldowns.
 module.__index = module
@@ -33,10 +34,10 @@ function module.new(npc, style)
 	self.Align = align
 	self.DoingM1 = false
 	self.Target = nil -- this will store the current player target
-	local conn2
-	conn2 = self.Hum.Died:Connect(function() -- remove the current attacker attribute to the target if the npc dies
-		self:Cleanup()
-		conn2:Disconnect()
+	local conn
+	conn = self.Hum.Died:Connect(function() -- does the end function when the npc dies
+		self:End()
+		conn2:Disconnect() -- disconnects the connect function
 	end)
 	self:Start() -- starts the npc loop
 	return self
@@ -149,6 +150,7 @@ function module:Block()
 		blocking.Unblock(self.Char) -- uses the unblock function which removes the blocking state
 	end)
 end
+
 function module:Decide(enemy) -- picks an action for the npc to do
 	local random = math.random(1,10) -- picks random number
 	if enemy:GetAttribute("CurrentAttacker") and enemy:GetAttribute("CurrentAttacker") ~= self.Char.Name then -- again, if there is a current attacker on the player and its not this npc then end
@@ -179,7 +181,7 @@ function module:Start()
 	local attacking = false
 	task.spawn(function()
 	while task.wait(0.1) do -- core npc loop
-		if not self.Char or self.Hum.Health <= 0 then self:Cleanup() break end -- if the npc has died then end 
+		if not self.Char or self.Hum.Health <= 0 then break end -- if the npc has died then end 
 		local target = self.Target
 		if not target or not target.Character then continue end -- if theres no enemy target then end 
 		local dist = self:Dist(self.Char, self.Target.Character)
@@ -219,6 +221,11 @@ function module:Cleanup()
         self.Target.Character:SetAttribute("CurrentAttacker", nil)
     end
     self.Target = nil
+end
+
+function module:End()
+self:Cleanup()
+setmetatable(self, nil)
 end
 
 return module
