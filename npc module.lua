@@ -55,10 +55,10 @@ function module.new(npc: Model, style: string) : NPC
 	return self
 end
 
-function module:GetClosestPlayer()
+function module:GetClosestPlayer() -- returns the closest player
 	local closest
-	local closestdistance = math.huge
-	for _, player in ipairs(Players:GetPlayers()) do
+	local closestdistance = 20
+	for _, player in ipairs(Players:GetPlayers()) do -- loops through all players
 		local char = player.Character
 		if not char then continue end
 		local root = char:FindFirstChild("HumanoidRootPart")
