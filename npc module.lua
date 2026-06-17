@@ -66,31 +66,74 @@ end
 function module:FollowPlayer(player)
 	local char = player.Character
 	if not char then return end
-	if states.GetState(self.Char, "Stunned") then return end -- get state returns the state of the character provided, if npc is stunned then end
-	if states.GetState(self.Char, "Blocking") then return end -- if npc is blocking then end
-	local targetRoot = char:FindFirstChild("HumanoidRootPart")
-	if not targetRoot then return end
-	local targetpos = targetRoot.Position -- position of the target
-	local myPos = self.Root.Position -- position of the npc
-	local dist = (targetpos - myPos).Magnitude
-	if char:GetAttribute("CurrentAttacker") and char:GetAttribute("CurrentAttacker")  ~= self.Char.Name then -- This detects if the target is already being attacked by another npc, if so it will stay still.
-		self.Hum:MoveTo(myPos) -- makes the npc stay still
+
+	if states.GetState(self.Char, "Stunned") then return end -- getstate returns the state of the given character. if the npc is stunned then it ends
+	if states.GetState(self.Char, "Blocking") then return end -- if the npc is blocking then end
+
+	local TargetRoot = char:FindFirstChild("HumanoidRootPart")
+	if not TargetRoot then return end
+
+	if char:GetAttribute("CurrentAttacker") and char:GetAttribute("CurrentAttacker") ~= self.Char.Name then -- if the player is already targeted then stay still
+		self.Hum:MoveTo(self.Root.Position)
 		return
 	end
-	if not char:GetAttribute("CurrentAttacker") then
-		char:SetAttribute("CurrentAttacker", self.Char.Name) -- Set targets current attacker as the npc so they cant be jumped by other npcs.
+
+	if not char:GetAttribute("CurrentAttacker") then 
+		char:SetAttribute("CurrentAttacker", self.Char.Name) -- sets the target player's current attacker as the npc
 	end
-	local right = targetRoot.CFrame.RightVector
-	local offset = right * math.random(-4,4)
-	local movePos = targetpos + offset
-	self.Hum:MoveTo(movePos)  -- Move to player with a random offset for realism.
+
+	-- predicts future position using velocity
+	local predictedPos =
+		TargetRoot.Position +
+		(TargetRoot.AssemblyLinearVelocity * 0.35)
+
+	-- circles around the target
+	local angle = math.rad((tick() * 120) % 360)
+	local radius = 4
+
+	local Orbit =
+		Vector3.new(
+			math.cos(angle) * radius,
+			0,
+			math.sin(angle) * radius
+		)
+
+	local movepos = predictedPos + Orbit
+
+	-- raycast wall check
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Blacklist
+	params.FilterDescendantsInstances = {self.Char, char}
+
+	local result =
+		workspace:Raycast(
+			self.Root.Position,
+			movepos - self.Root.Position,
+			params
+		)
+
+	if not result then
+		self.Hum:MoveTo(movepos)
+	end
 end
 
 function module:FaceCharacter(character)
 	if not character then return end
+
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if not root then return end
-	self.Align.CFrame = CFrame.lookAt(self.Root.Position, root.Position) -- Aligns position so the npc faces the player smoothly
+
+	local MyPos = self.Root.Position
+
+	local flat = -- take only the x and z position of the target so it just faces them
+		Vector3.new(
+			root.Position.X,
+			MyPos.Y,
+			root.Position.Z
+		)
+
+	self.Align.CFrame =
+		CFrame.lookAt(MyPos, flat) -- uses align position to make the npc face the target
 end
 
 function module:Dist(char1, char2)
@@ -136,6 +179,8 @@ function module:M1Chain()
 	end
 	self.Combo = 0 -- after the loop it sets the combo back to 0.
 end
+
+
 
 function module:Block()
 	if states.GetState(self.Char, "Stunned") then return end -- they cant block if they are stunned or performing an attack
