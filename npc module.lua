@@ -83,7 +83,7 @@ function module:FollowPlayer(player)
 	end
 
 	-- predicts future position using velocity
-	local predictedPos =
+	local predicted =
 		TargetRoot.Position +
 		(TargetRoot.AssemblyLinearVelocity * 0.35)
 
@@ -98,7 +98,7 @@ function module:FollowPlayer(player)
 			math.sin(angle) * radius
 		)
 
-	local movepos = predictedPos + Orbit
+	local movepos = predicted + Orbit
 
 	-- raycast wall check
 	local params = RaycastParams.new()
