@@ -1,12 +1,22 @@
 -- Disord user: Bobby36746 Roblox User: Bobbywasabi5888
--- This is an NPC AI combat controller
+-- This is a basic NPC AI combat controller
 -- I know its close, but this script is indeed over 200 lines, not including blanks lines.
 local module = {} 
 local states = require(game.ServerScriptService:WaitForChild("States")) -- This module script handles states like stuns, blocking, and cooldowns. For combat.
 module.__index = module
 local blocking = require(game.ServerScriptService.Blocking)
 
-function module.new(npc, style)
+export type NPC = typeof(setmetatable({} :: {
+	Char: Model,
+	Hum: Humanoid,
+	Root: BasePart,
+	Animator: Animator,
+	Target: Player?,
+	Combo: number,
+	LastM1: number,
+}, module))
+
+function module.new(npc: Model, style: String) : NPC
 	local self = setmetatable({}, module) -- sets metatable for the npc
 	self.Char = npc
 	local hum = npc:WaitForChild("Humanoid")
@@ -44,30 +54,34 @@ function module.new(npc, style)
 end
 
 function module:GetClosestPlayer()
-	local closest = nil
-	local range = 20 -- max detect range
-	for _, player in pairs(game.Players:GetPlayers()) do -- loops through all the players
-		local char = player.Character
-		if char and char:FindFirstChild("HumanoidRootPart") then
-			local hum = char.Humanoid
-			if not hum or hum.Health <= 0 then continue end
-			local distance = (char.HumanoidRootPart.Position - self.Root.Position).Magnitude -- gets the distance between the npc and the closest player
-			
-			if distance < range then -- if the player is in range then it stores the "closest" variable as that player
-				closest = player
-			end
-		end
+local closest
+local closestDistance = math.huge
+
+for _, player in ipairs(game.Players:GetPlayers()) do
+	local char = player.Character
+	if not char then
+		continue
 	end
+	local root = char:FindFirstChild("HumanoidRootPart")
+	local hum = char:FindFirstChild("Humanoid")
+	if not root or not hum or hum.Health <= 0 then
+		continue
+	end
+	local distance = (root.Position - self.Root.Position).Magnitude
+	if distance < closestDistance then
+		closestDistance = distance
+		closest = player
+	end
+end
 	if closest then
 	self.Target = closest -- sets the npcs current target as the stored player
 	end
 end
 
-function module:FollowPlayer(player)
+function module:FollowPlayer(player: Player)
+    if not self:CanAct() then return end -- makes sure they are not stunned, blocking, or attacking
 	local char = player.Character
 	if not char then return end
-	if states.GetState(self.Char, "Stunned") then return end -- getstate returns the state of the given character. if the npc is stunned then it ends
-	if states.GetState(self.Char, "Blocking") then return end -- if the npc is blocking then end
 	local TargetRoot = char:FindFirstChild("HumanoidRootPart")
 	if not TargetRoot then return end
 	if char:GetAttribute("CurrentAttacker") and char:GetAttribute("CurrentAttacker") ~= self.Char.Name then -- if the player is already targeted then stay still
@@ -97,7 +111,7 @@ function module:FollowPlayer(player)
 	end
 end
 
-function module:FaceCharacter(character)
+function module:FaceCharacter(character: Model)
 	if not character then return end
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if not root then return end
@@ -106,7 +120,15 @@ function module:FaceCharacter(character)
 	self.Align.CFrame = CFrame.lookAt(MyPos, flat) -- uses align position to make the npc face the target
 end
 
-function module:Dist(char1, char2)
+function module:CanAct() -- checks if the npc is stunned, blocking, or attacking. GetState returns the state stored on the character from a table
+	return not (
+		states.GetState(self.Char,"Stunned")
+		or states.GetState(self.Char,"Blocking")
+		or states.GetState(self.Char,"Attacking")
+	)
+end
+
+function module:Dist(char1: Model, char2: Model) : number
 	return (char1.HumanoidRootPart.Position - char2.HumanoidRootPart.Position).Magnitude -- Return the distance from one character to another
 end
 
@@ -115,8 +137,7 @@ function module:M1Chain()
 	if states.GetState(self.Char, "Attacking") then return end -- if they are already doing an attack then end
 	for i = 1, 4 do -- M1 Loop
 		if not self.Target or not self.Target.Character then break end -- if there is no current target then end
-		if states.GetState(self.Char, "Stunned") then break end -- if stunned then end
-		if states.GetState(self.Char, "Blocking") then break end -- if blocking then end
+	    if not self:CanAct() then return end
 		local target = self.Target
 		if not target or not target.Character then break end
 		if self:Dist(self.Char, target.Character) > 10 then break end -- if the npc is too far from the target then end
@@ -153,8 +174,7 @@ end
 
 
 function module:Block()
-	if states.GetState(self.Char, "Stunned") then return end -- they cant block if they are stunned or performing an attack
-	if states.GetState(self.Char, "Attacking") then return end
+    if not self:CanAct() then return end
 	local anim = self.Animator:LoadAnimation(game.ReplicatedStorage.Anims.Block) -- gets the block animation
 	if not anim then return end
 	anim:Play() -- plays the block animation
@@ -166,7 +186,7 @@ function module:Block()
 	end)
 end
 
-function module:Decide(enemy) -- picks an action for the npc to do
+function module:Decide(enemy: Model) -- picks an action for the npc to do
 	local random = math.random(1,10) -- picks random number
 	if enemy:GetAttribute("CurrentAttacker") and enemy:GetAttribute("CurrentAttacker") ~= self.Char.Name then -- again, if there is a current attacker on the player and its not this npc then end
 		return
