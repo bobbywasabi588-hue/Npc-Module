@@ -1,6 +1,5 @@
 -- Disord user: Bobby36746 Roblox User: Bobbywasabi5888
 -- This is a basic NPC AI combat controller
--- I know its close, but this script is indeed over 200 lines, not including blanks lines.
 local module = {} 
 local states = require(game.ServerScriptService:WaitForChild("States")) -- This module script handles states like stuns, blocking, and cooldowns. For combat.
 module.__index = module
