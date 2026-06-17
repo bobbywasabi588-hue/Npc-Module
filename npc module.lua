@@ -136,7 +136,7 @@ function module:M1Chain()
 	if states.GetState(self.Char, "Attacking") then return end -- if they are already doing an attack then end
 	for i = 1, 4 do -- M1 Loop
 		if not self.Target or not self.Target.Character then break end -- if there is no current target then end
-	    if not self:CanAct() then return end
+	    if not self:CanAct() then break end
 		local target = self.Target
 		if not target or not target.Character then break end
 		if self:Dist(self.Char, target.Character) > 10 then break end -- if the npc is too far from the target then end
