@@ -66,52 +66,32 @@ end
 function module:FollowPlayer(player)
 	local char = player.Character
 	if not char then return end
-
 	if states.GetState(self.Char, "Stunned") then return end -- getstate returns the state of the given character. if the npc is stunned then it ends
 	if states.GetState(self.Char, "Blocking") then return end -- if the npc is blocking then end
-
 	local TargetRoot = char:FindFirstChild("HumanoidRootPart")
 	if not TargetRoot then return end
-
 	if char:GetAttribute("CurrentAttacker") and char:GetAttribute("CurrentAttacker") ~= self.Char.Name then -- if the player is already targeted then stay still
 		self.Hum:MoveTo(self.Root.Position)
 		return
 	end
-
 	if not char:GetAttribute("CurrentAttacker") then 
 		char:SetAttribute("CurrentAttacker", self.Char.Name) -- sets the target player's current attacker as the npc
 	end
-
 	-- predicts future position using velocity
-	local predicted =
-		TargetRoot.Position +
-		(TargetRoot.AssemblyLinearVelocity * 0.35)
-
+	local predicted = TargetRoot.Position + (TargetRoot.AssemblyLinearVelocity * 0.35)
 	-- circles around the target
 	local angle = math.rad((tick() * 120) % 360)
 	local radius = 4
-
-	local Orbit =
-		Vector3.new(
-			math.cos(angle) * radius,
-			0,
-			math.sin(angle) * radius
-		)
-
+	local Orbit = Vector3.new(	math.cos(angle) * radius, 0, math.sin(angle) * radius)
 	local movepos = predicted + Orbit
-
 	-- raycast wall check
 	local params = RaycastParams.new()
 	params.FilterType = Enum.RaycastFilterType.Blacklist
 	params.FilterDescendantsInstances = {self.Char, char}
-
-	local result =
-		workspace:Raycast(
+	local result =	workspace:Raycast(
 			self.Root.Position,
 			movepos - self.Root.Position,
-			params
-		)
-
+			params)
 	if not result then
 		self.Hum:MoveTo(movepos)
 	end
@@ -119,21 +99,11 @@ end
 
 function module:FaceCharacter(character)
 	if not character then return end
-
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if not root then return end
-
-	local MyPos = self.Root.Position
-
-	local flat = -- take only the x and z position of the target so it just faces them
-		Vector3.new(
-			root.Position.X,
-			MyPos.Y,
-			root.Position.Z
-		)
-
-	self.Align.CFrame =
-		CFrame.lookAt(MyPos, flat) -- uses align position to make the npc face the target
+	local MyPos = self.Root.Position -- take only the x and z position of the target so it just faces them
+	local flat = Vector3.new(root.Position.X, MyPos.Y, root.Position.Z)
+	self.Align.CFrame = CFrame.lookAt(MyPos, flat) -- uses align position to make the npc face the target
 end
 
 function module:Dist(char1, char2)
