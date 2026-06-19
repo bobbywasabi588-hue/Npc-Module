@@ -1,4 +1,4 @@
--- Disord user: joestar256 Roblox User: Bobbywasabi5888
+-- Disord user: johnrobertson3674 Roblox User: Bobbywasabi5888
 -- This is a basic NPC AI combat controller, it's very basic I know, but I think it shows I have a good understanding of the luau language.
 local module = {} 
 local states = require(game.ServerScriptService:WaitForChild("States")) -- This module script handles states like stuns, blocking, and cooldowns. For combat.
